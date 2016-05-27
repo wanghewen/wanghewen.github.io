@@ -1,0 +1,381 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>IO &mdash; CommonModules 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="CommonModules 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for IO</h1><div class="highlight"><pre>
+<span class="c"># -*- coding:utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;File I/O related operations, such as list files or remove files/folder,&quot;&quot;&quot;</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&quot;Wang Hewen&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="kn">as</span> <span class="nn">nx</span>
+<span class="kn">from</span> <span class="nn">networkx.readwrite</span> <span class="kn">import</span> <span class="n">json_graph</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.io</span>
+
+<div class="viewcode-block" id="ListApkFiles"><a class="viewcode-back" href="../IO.html#IO.ListApkFiles">[docs]</a><span class="k">def</span> <span class="nf">ListApkFiles</span><span class="p">(</span><span class="n">ApkDirectory</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Get the Apk file names for an ApkDirectory in a sorted order. Rerurn an empty list if ApkDirectory==&quot;&quot;.</span>
+
+<span class="sd">:param String ApkDirectory: absolute path of a apk file directory</span>
+<span class="sd">:return: ListOfApkFiles: The list of absolute paths of Apks under ApkDirectory</span>
+<span class="sd">:rtype: List[String]</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">ListOfApkFiles</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">ApkDirectory</span><span class="o">==</span><span class="s">&quot;&quot;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Directory is empty!&#39;</span><span class="p">)</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">ApkDirectory</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+        <span class="c">#list filenames </span>
+        <span class="c">#get the absolute path for the files</span>
+        <span class="n">AbsolutePath</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ApkDirectory</span><span class="p">,</span> <span class="n">filename</span><span class="p">))</span>
+        <span class="c">#get the absolute path for the files</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="s">&quot;.apk&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">):</span>
+                <span class="n">ListOfApkFiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ListOfApkFiles</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ListFiles"><a class="viewcode-back" href="../IO.html#IO.ListFiles">[docs]</a><span class="k">def</span> <span class="nf">ListFiles</span><span class="p">(</span><span class="n">Directory</span><span class="p">,</span> <span class="n">Extension</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Given an extension, get the file names for a Directory in a sorted order. Rerurn an empty list if Directory == &quot;&quot;.</span>
+
+<span class="sd">    :param String Directory: absolute path of a file directory</span>
+<span class="sd">    :param String Extension: Extension of the files you want. Better include &quot;.&quot; in the Extension</span>
+<span class="sd">    :return: ListOfFiles: The list of absolute paths of the files you want under Directory</span>
+<span class="sd">    :rtype: List[String]</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">ListOfFiles</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">Directory</span> <span class="o">==</span> <span class="s">&quot;&quot;</span> <span class="ow">or</span> <span class="n">Directory</span> <span class="o">==</span> <span class="p">[]):</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">if</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">Directory</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">list</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">Directory</span><span class="p">)</span> <span class="o">==</span> <span class="bp">False</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Directory</span><span class="p">,</span> <span class="s">&#39;Directory is not a directory!&#39;</span><span class="p">)</span>
+    <span class="k">if</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">Extension</span><span class="p">)</span><span class="o">!=</span><span class="nb">str</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Extension</span><span class="p">,</span> <span class="s">&#39;Extension is not a string!&#39;</span><span class="p">)</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">Extension</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">Extension</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&quot;.&quot;</span><span class="p">):</span>
+            <span class="n">Extension</span> <span class="o">=</span> <span class="s">&quot;.&quot;</span> <span class="o">+</span> <span class="n">Extension</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">Directory</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="n">Directories</span> <span class="o">=</span> <span class="n">Directory</span>
+        <span class="k">for</span> <span class="n">Directory</span> <span class="ow">in</span> <span class="n">Directories</span><span class="p">:</span>
+                <span class="n">filenames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">Directory</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+                    <span class="c">#list filenames </span>
+                    <span class="c">#get the absolute path for the files</span>
+                    <span class="n">AbsolutePath</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Directory</span><span class="p">,</span> <span class="n">filename</span><span class="p">))</span>
+                    <span class="c">#get the absolute path for the files</span>
+                    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="n">Extension</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">):</span>
+                            <span class="n">ListOfFiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">filenames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">Directory</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+            <span class="c">#list filenames </span>
+            <span class="c">#get the absolute path for the files</span>
+            <span class="n">AbsolutePath</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Directory</span><span class="p">,</span> <span class="n">filename</span><span class="p">))</span>
+            <span class="c">#get the absolute path for the files</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="n">Extension</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">):</span>
+                    <span class="n">ListOfFiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ListOfFiles</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ListAllFiles"><a class="viewcode-back" href="../IO.html#IO.ListAllFiles">[docs]</a><span class="k">def</span> <span class="nf">ListAllFiles</span><span class="p">(</span><span class="n">Directory</span><span class="p">,</span> <span class="n">Extension</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Given an extension, get the file names for a Directory and all its sub-directories in a sorted order. Rerurn an empty list if Directory == &quot;&quot;.</span>
+
+<span class="sd">    :param String Directory: absolute path of a file directory</span>
+<span class="sd">    :param String Extension: Extension of the files you want. Better include &quot;.&quot; in the Extension</span>
+<span class="sd">    :return: ListOfFiles: The list of absolute paths of the files you want under Directory</span>
+<span class="sd">    :rtype: List[String]</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">ListOfFiles</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">Directory</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Directory</span><span class="p">,</span> <span class="s">&#39;Directory is empty!&#39;</span><span class="p">)</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">Directory</span><span class="p">)</span> <span class="o">==</span> <span class="bp">False</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Directory</span><span class="p">,</span> <span class="s">&#39;Directory is not a directory!&#39;</span><span class="p">)</span>
+    <span class="k">if</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">Extension</span><span class="p">)</span><span class="o">!=</span><span class="nb">str</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Extension</span><span class="p">,</span> <span class="s">&#39;Extension is not a string!&#39;</span><span class="p">)</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">Extension</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">Extension</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&quot;.&quot;</span><span class="p">):</span>
+            <span class="n">Extension</span> <span class="o">=</span> <span class="s">&quot;.&quot;</span> <span class="o">+</span> <span class="n">Extension</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">Directory</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="c">#list filenames </span>
+            <span class="c">#get the absolute path for the files</span>
+            <span class="n">AbsolutePath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+            <span class="c">#get the absolute path for the files</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">Extension</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">):</span>
+                    <span class="n">ListOfFiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ListOfFiles</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ListDirs"><a class="viewcode-back" href="../IO.html#IO.ListDirs">[docs]</a><span class="k">def</span> <span class="nf">ListDirs</span><span class="p">(</span><span class="n">Directory</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Get all sub-directory paths for a Directory in a sorted order. Rerurn an empty list if Directory == &quot;&quot;. Modified from ListFiles(which means variable names remain the same...)</span>
+
+<span class="sd">    :param String Directory: absolute path of a file directory</span>
+<span class="sd">    :return: ListOfFiles: The list of absolute paths of the sub-directories you want under the Directory</span>
+<span class="sd">    :rtype: List[String]</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">ListOfFiles</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">Directory</span> <span class="o">==</span> <span class="s">&quot;&quot;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Directory</span><span class="p">,</span> <span class="s">&#39;Directory is empty!&#39;</span><span class="p">)</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">Directory</span><span class="p">)</span> <span class="o">==</span> <span class="bp">False</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">Directory</span><span class="p">,</span> <span class="s">&#39;Directory is not a directory!&#39;</span><span class="p">)</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">Directory</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+        <span class="c">#list filenames </span>
+        <span class="c">#get the absolute path for the files</span>
+        <span class="n">AbsolutePath</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Directory</span><span class="p">,</span> <span class="n">filename</span><span class="p">))</span>
+        <span class="c">#get the absolute path for the files</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">):</span>
+            <span class="n">ListOfFiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ListOfFiles</span><span class="p">)</span>
+    
+    </div>
+<div class="viewcode-block" id="FileExist"><a class="viewcode-back" href="../IO.html#IO.FileExist">[docs]</a><span class="k">def</span> <span class="nf">FileExist</span><span class="p">(</span><span class="n">FilePath</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Given file path, determine a file exist or not.</span>
+
+<span class="sd">    :param String FilePath: absolute path of a file or directory</span>
+<span class="sd">    :rtype: Boolean</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">FilePath</span><span class="p">)</span><span class="o">==</span><span class="bp">True</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c">#if os.path.isdir(ApkFilePath)==False:</span>
+        <span class="c">#    if(os.path.basename(ApkFilePath)) in os.listdir(os.getcwd()):</span>
+        <span class="c">#        return True</span>
+        <span class="k">return</span> <span class="bp">False</span>
+</div>
+<div class="viewcode-block" id="RemoveDirectory"><a class="viewcode-back" href="../IO.html#IO.RemoveDirectory">[docs]</a><span class="k">def</span> <span class="nf">RemoveDirectory</span><span class="p">(</span><span class="n">Folder</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Given Folder path, remove this folder(include all content inside).</span>
+
+<span class="sd">    :param String Folder: absolute path of a directory</span>
+<span class="sd">    :rtype: Boolean</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">FileExist</span><span class="p">(</span><span class="n">Folder</span><span class="p">)</span> <span class="o">==</span> <span class="bp">False</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;Directory not found!&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">Folder</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ExportToJson"><a class="viewcode-back" href="../IO.html#IO.ExportToJson">[docs]</a><span class="k">def</span> <span class="nf">ExportToJson</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">,</span> <span class="n">Content</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Export something to json file. </span>
+<span class="sd">    Will automatic convert Set content into List.</span>
+
+<span class="sd">    :param String AbsolutePath: absolute path to store the json file</span>
+<span class="sd">    :param Variant Content: something you want to export</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">Content</span><span class="p">,</span><span class="nb">set</span><span class="p">)):</span>
+        <span class="n">Content</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">Content</span><span class="p">)</span>
+    <span class="c">#if(isinstance(Content, collections.defaultdict)):</span>
+    <span class="c">#    Content = dict(Content)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">,</span><span class="s">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">Content</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="ExportToPkl"><a class="viewcode-back" href="../IO.html#IO.ExportToPkl">[docs]</a><span class="k">def</span> <span class="nf">ExportToPkl</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">,</span><span class="n">Content</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Export something to pickle file. </span>
+<span class="sd">    Will automatic convert Set content into List.</span>
+
+<span class="sd">    :param String AbsolutePath: absolute path to store the json file</span>
+<span class="sd">    :param Variant Content: something you want to export</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">Content</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
+        <span class="n">Content</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">Content</span><span class="p">)</span>
+    <span class="c">#if(isinstance(Content, collections.defaultdict)):</span>
+    <span class="c">#    Content = dict(Content)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">,</span> <span class="s">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">Content</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ImportFromPkl"><a class="viewcode-back" href="../IO.html#IO.ImportFromPkl">[docs]</a><span class="k">def</span> <span class="nf">ImportFromPkl</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Import something from pickle file. </span>
+
+<span class="sd">    :param String AbsolutePath: absolute path of the pickle file</span>
+<span class="sd">    :return: Content: Content in the pickle file</span>
+<span class="sd">    :rtype: Variant</span>
+<span class="sd">    &#39;&#39;&#39;</span>    
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">,</span><span class="s">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">File</span><span class="p">:</span>
+        <span class="n">Content</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">File</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="ExportToJsonNodeLinkData"><a class="viewcode-back" href="../IO.html#IO.ExportToJsonNodeLinkData">[docs]</a><span class="k">def</span> <span class="nf">ExportToJsonNodeLinkData</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">,</span><span class="n">GraphContent</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Export graph node link date to json file. </span>
+
+<span class="sd">    :param String AbsolutePath: absolute path to store the json file</span>
+<span class="sd">    :param nxGraph GraphContent: some graph you want to export</span>
+<span class="sd">    &#39;&#39;&#39;</span>    
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">,</span><span class="s">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">Content</span><span class="o">=</span><span class="n">json_graph</span><span class="o">.</span><span class="n">node_link_data</span><span class="p">(</span><span class="n">GraphContent</span><span class="p">)</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">Content</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="ExportToGML"><a class="viewcode-back" href="../IO.html#IO.ExportToGML">[docs]</a><span class="k">def</span> <span class="nf">ExportToGML</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">,</span> <span class="n">GraphContent</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Export graph node link date to json file. </span>
+
+<span class="sd">    :param String AbsolutePath: absolute path to store the json file</span>
+<span class="sd">    :param nxGraph GraphContent: some graph you want to export</span>
+<span class="sd">    &#39;&#39;&#39;</span>    
+    <span class="n">nx</span><span class="o">.</span><span class="n">write_gml</span><span class="p">(</span><span class="n">GraphContent</span><span class="p">,</span> <span class="n">AbsolutePath</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="ImportFromJsonNodeLinkData"><a class="viewcode-back" href="../IO.html#IO.ImportFromJsonNodeLinkData">[docs]</a><span class="k">def</span> <span class="nf">ImportFromJsonNodeLinkData</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Import graph node link date from json file.</span>
+
+<span class="sd">    :param String AbsolutePath: absolute path of the json file</span>
+<span class="sd">    :return: GraphContent: Graph content in the json file</span>
+<span class="sd">    :rtype: nxGraph</span>
+<span class="sd">    &#39;&#39;&#39;</span>    
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">,</span><span class="s">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">Content</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">GraphContent</span><span class="o">=</span><span class="n">json_graph</span><span class="o">.</span><span class="n">node_link_graph</span><span class="p">(</span><span class="n">Content</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">GraphContent</span>
+</div>
+<div class="viewcode-block" id="ImportFromJson"><a class="viewcode-back" href="../IO.html#IO.ImportFromJson">[docs]</a><span class="k">def</span> <span class="nf">ImportFromJson</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Import something from json file. </span>
+
+<span class="sd">    :param String AbsolutePath: absolute path of the json file</span>
+<span class="sd">    :return: Content: Content in the json file</span>
+<span class="sd">    :rtype: Variant</span>
+<span class="sd">    &#39;&#39;&#39;</span>    
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">,</span><span class="s">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">File</span><span class="p">:</span>
+        <span class="n">Content</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">File</span><span class="p">,</span> <span class="n">encoding</span> <span class="o">=</span> <span class="s">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Content</span></div>
+<div class="viewcode-block" id="ExportNpArray"><a class="viewcode-back" href="../IO.html#IO.ExportNpArray">[docs]</a><span class="k">def</span> <span class="nf">ExportNpArray</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">,</span> <span class="n">NpArray</span><span class="p">,</span> <span class="n">Format</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%f</span><span class="s">&quot;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Export a Numpy array to a file.</span>
+<span class="sd">    </span>
+<span class="sd">    :param String AbsolutePath: The stored file location.</span>
+<span class="sd">    :param numpy.array NpArray: The Numpy array you want to store.</span>
+<span class="sd">    :param String Format: How to print each element, e.g. %i, %10.5f</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">,</span> <span class="s">&quot;w+&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">File</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">File</span><span class="p">,</span> <span class="n">NpArray</span><span class="p">,</span> <span class="n">fmt</span> <span class="o">=</span> <span class="n">Format</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ImportNpArray"><a class="viewcode-back" href="../IO.html#IO.ImportNpArray">[docs]</a><span class="k">def</span> <span class="nf">ImportNpArray</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">,</span> <span class="n">DataType</span><span class="p">,</span> <span class="n">ndmin</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Import a Numpy array from a file.</span>
+<span class="sd">    </span>
+<span class="sd">    :param String AbsolutePath: The stored file location.</span>
+<span class="sd">    :param data-type DataType: How to match each element, e.g. int, float</span>
+<span class="sd">    :param int ndmin: How many dimensions of array at least you will have.</span>
+<span class="sd">    :return: NpArray: NpArray in the file</span>
+<span class="sd">    :rtype: NpArray</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">NpArray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">DataType</span><span class="p">,</span> <span class="n">ndmin</span> <span class="o">=</span> <span class="n">ndmin</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">NpArray</span>
+</div>
+<div class="viewcode-block" id="ExportSparseMatrix"><a class="viewcode-back" href="../IO.html#IO.ExportSparseMatrix">[docs]</a><span class="k">def</span> <span class="nf">ExportSparseMatrix</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">,</span> <span class="n">SparseMatrix</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Export a scipy sparse matrix to a file using matrix market format.</span>
+<span class="sd">    Please refer to http://math.nist.gov/MatrixMarket/formats.html for more information about this format.</span>
+<span class="sd">    </span>
+<span class="sd">    :param String AbsolutePath: The stored file location.</span>
+<span class="sd">    :param scipy sparse matrix SparseMatrix: The scipy sparse matrix you want to store.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">,</span> <span class="s">&quot;w+&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">File</span><span class="p">:</span>
+        <span class="n">scipy</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">mmwrite</span><span class="p">(</span><span class="n">File</span><span class="p">,</span> <span class="n">SparseMatrix</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ImportSparseMatrix"><a class="viewcode-back" href="../IO.html#IO.ImportSparseMatrix">[docs]</a><span class="k">def</span> <span class="nf">ImportSparseMatrix</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Import a scipy sparse matrix from a file using matrix market format.</span>
+<span class="sd">    </span>
+<span class="sd">    :param String AbsolutePath: The stored file location.</span>
+<span class="sd">    :return: SparseMatrix: (converted) scipy csr_matrix in the file</span>
+<span class="sd">    :rtype: Scipy Sparse Matrix</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">SparseMatrix</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">mmread</span><span class="p">(</span><span class="n">AbsolutePath</span><span class="p">)</span>
+    <span class="n">SparseMatrix</span> <span class="o">=</span> <span class="n">SparseMatrix</span><span class="o">.</span><span class="n">tocsr</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">SparseMatrix</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script><ul>
+<h3>Links:</h3>
+<li><b><a href="https://github.com/wanghewen/CommonModules" class="btn">View on GitHub</a> &raquo;</b></li>
+<li><b><a href="https://github.com/wanghewen/CommonModules/zipball/master" class="btn">Download .zip</a></b></li>
+<li><b><a href="https://github.com/wanghewen/CommonModules/tarball/master" class="btn">Download .tar.gz</a></b></li>
+</ul>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Wang Hewen.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

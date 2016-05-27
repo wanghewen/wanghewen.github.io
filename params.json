@@ -1,0 +1,6 @@
+{
+  "name": "Commonmodules",
+  "tagline": "",
+  "body": "### Welcome to GitHub Pages for **CommonModules**!\r\n\r\nThis package is meant to provide some shortcuts for **Python** programmers when solving problems.  \r\nPlease refer to `documentation/_build/html/index.html` folder for more information.  \r\nYou can also use `pip install CommonModules` to install this package.\r\n\r\nWecome any issues or pull requests~\r\n",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
